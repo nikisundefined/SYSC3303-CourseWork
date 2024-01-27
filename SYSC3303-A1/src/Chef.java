@@ -23,6 +23,7 @@ class Chef implements Runnable
 
         while (true)
         {
+            // terminate thread when table closed
             if (ingredients.check() == -1) break;
             // if the ingredient the chef has infinite of matches the combination on the table, make the sandwich and eat it
             if (chef_id + combo_id[ingredients.check()] == 7)
