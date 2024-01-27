@@ -1,5 +1,6 @@
 /**
  * AGENT is the class for the agent thread.
+ * Written by Nicholas Nemec - 101211060
  */
 import java.util.concurrent.ThreadLocalRandom;
 

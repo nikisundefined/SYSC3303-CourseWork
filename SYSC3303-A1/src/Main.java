@@ -1,5 +1,6 @@
 /**
  * MAIN is the class that configures and starts all threads.
+ * Written by Nicholas Nemec - 101211060
  */
 public class Main
 {
@@ -9,7 +10,6 @@ public class Main
         
         Table table_ingredients;
         table_ingredients = new Table();
-        Table table_ingredients;
         table_ingredients = new Table();
 
         // configure agent and chef threads

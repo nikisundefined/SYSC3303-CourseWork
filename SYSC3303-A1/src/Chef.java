@@ -1,5 +1,6 @@
 /**
  * CHEF is the class for the chef thread.
+ * Written by Nicholas Nemec - 101211060
  */
 class Chef implements Runnable
 {
@@ -33,7 +34,7 @@ class Chef implements Runnable
             {
                 combo_index = ingredients.take();
                 // announce ingredients taken from the table
-                System.out.println(Thread.currentThread().getName() + " retrieved " + combo_name[combo_index]);
+                System.out.println(Thread.currentThread().getName() + " retrieved " + combo_name[combo_index] + ", made the sandwich and ate it");
             }
             try {Thread.sleep(1500);}
             catch (InterruptedException e) {}

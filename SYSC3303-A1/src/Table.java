@@ -1,5 +1,6 @@
 /**
  * TABLE is the class for the table thread managing sandwich ingredients.
+ * Written by Nicholas Nemec - 101211060
  */
 public class Table
 {
