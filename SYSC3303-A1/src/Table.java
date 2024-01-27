@@ -1,51 +1,48 @@
+/**
+ * TABLE is the class for the table thread managing sandwich ingredients.
+ */
 public class Table
 {
-    // a simple 1 integer buffer is used to hold the combination of ingredients on the table
-    private int buffer;
-    // If true, there is room for at least one object
-    // in the buffer.
-    private boolean writeable = true;
+    // index of ingredient combination on the table
+    private int ingredients;
+    // table status
+    private boolean empty = true;
 
-    // If true, there is at least one object stored
-    // in the buffer.
-    private boolean readable = false;
-
-    public synchronized void addLast(int item)
+    //  method to put ingredients on the table
+    public synchronized void add(int supply)
     {
-        while (!writeable)
+        while (!empty) // wait while table is full
         {
             try {wait();}
             catch (InterruptedException e) {System.err.println(e);}
         }
-        buffer = item;
-        readable = true;
-        writeable = false;
-        notifyAll();
+        ingredients = supply; // put ingredients on the table
+        empty = false; // table is full
+        notifyAll(); // notify all threads
     }
 
-    public synchronized int removeFirst()
+    //  method to remove ingredients from the table
+    public synchronized int take()
     {
-        int item;
-        while (!readable)//if the buffer isn't full
+        while (empty) // wait while table is empty
         {
             try {wait();}
             catch (InterruptedException e) {System.err.println(e);}
         }
-        item = buffer;//save the value of the buffer
-        buffer = 0;//remove the item stored in the buffer
-        writeable = true;//flag that the buffer has room
-        readable = false;//flag that the buffer cannot be read
-        notifyAll();//notify all the observers(chefs)
-        return item;//return the value of the item taken from the buffer
+        empty = true; // remove ingredients from the table
+        notifyAll(); // notify all threads
+        return ingredients; // return id for the ingredient combo removed from the table
     }
 
-    public synchronized int CheckTable(){//method to see what's on the table to decide what chef will take it
-        while (!readable)//while there's an item in the buffer check what it is
+    //  method to show what ingredients are on the table
+    public synchronized int check()
+    {
+        while (empty) // wait while table is empty
         {
             try {wait();}
             catch (InterruptedException e) {System.err.println(e);}
         }
-        notifyAll();
-        return buffer;
+        notifyAll(); // notify all threads
+        return ingredients; // return id for the ingredient combo currently on the table
     }
 }
