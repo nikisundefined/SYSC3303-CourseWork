@@ -1,28 +1,35 @@
 /**
- * Consumer is the class for the consumer thread. CHEFS
+ * CHEF is the class for the chef thread.
  */
 class Chef implements Runnable
 {
-    private Table buffer;
-    private int ing;
-    int[] ingredient = {6,5,3}; //The ingredient list that holds the numbers corresponding to the ingredient combinations
-    String[] ingname = {"Peanut Butter and Bread","Bread and Jam","Peanut Butter and Jam"}; //Array to hold the string outputs based on what is on the Table
-    public Chef(Table buf, int Ingredient)//pass the table and the ingredient that the chef has infinite of as parameters when initializing the objects
+    private Table ingredients;
+    private int chef_id; // chef's ingredient id
+    // codes for ingredient combinations
+    int[] combo_id = {6,5,3};
+    // descriptions of ingredient combinations
+    String[] combo_name = {"peanut butter and bread","bread and jam","peanut butter and jam"};
+    
+    // pass the table and the ingredient that the chef has infinite of as parameters when initializing the objects
+    public Chef(Table table_ingredients, int chef_ingredient)
     {
-        buffer = buf;
-        ing = Ingredient;
+        ingredients = table_ingredients;
+        chef_id = chef_ingredient;
     }
 
     public void run()
     {
-        int item = 0;
+        int combo_index = 0;
 
-        for(int i = 0; i < 20; i++)
+        while (true)
         {
-            if(buffer.CheckTable()==-1)break;
-            if(ing + ingredient[buffer.CheckTable()] == 7) { //If the ingredient the chef has infinite of matches the combination on the table, make the sandwich and eat it
-                item = buffer.removeFirst();
-                System.out.println(Thread.currentThread().getName() + " consumed " + ingname[item]);//Output string
+            if (ingredients.check() == -1) break;
+            // if the ingredient the chef has infinite of matches the combination on the table, make the sandwich and eat it
+            if (chef_id + combo_id[ingredients.check()] == 7)
+            {
+                combo_index = ingredients.take();
+                // announce ingredients taken from the table
+                System.out.println(Thread.currentThread().getName() + " retrieved " + combo_name[combo_index]);
             }
             try {Thread.sleep(1500);}
             catch (InterruptedException e) {}
