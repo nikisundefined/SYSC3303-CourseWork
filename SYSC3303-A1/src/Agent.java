@@ -5,28 +5,37 @@ import java.util.concurrent.ThreadLocalRandom;
 
 class Agent implements Runnable
 {
-    // list of unique ingredient combos
-    String[] combo_name = {"peanut butter and bread","bread and jam","peanut butter and jam"};
-    private Table ingredients;
+    // array containing unique ingredient combos
+    String[] item_combo = {"peanut butter and bread","bread and jam","peanut butter and jam"};
+    // declare variable for table items
+    private Table table_items;
+    // number of sandwiches
+    private int sandwich_no;
 
-    public Agent(Table table_ingredients)
+    public Agent (Table a_table_items, int a_sandwich_no)
     {
-        ingredients = table_ingredients;
+        table_items = a_table_items;
+        sandwich_no = a_sandwich_no;
     }
 
     public void run()
     {
-        for(int i = 0; i < 20; i++)
+
+        for (int i = 0; i < sandwich_no; i++)
         {
-            int index = ThreadLocalRandom.current().nextInt(3); // random index of ingredient combo
-            ingredients.add(index); // place ingredient combo on the table
+            // generate random index of ingredient combo
+            int index = ThreadLocalRandom.current().nextInt(item_combo.length);
 
-            // announce ingredient combo placed on the table
-            System.out.println(i+ " " +Thread.currentThread().getName() + " supplied " + combo_name[index]);
+            // put ingredient combo on the table
+            table_items.put(item_combo[index]);
 
-            try {Thread.sleep(250);}
+            // simulate delay
+            try {Thread.sleep(500);}
             catch (InterruptedException e) {}
+
+            // describe activity
+            System.out.println(i+1 + ". " + Thread.currentThread().getName() + " supplied " + item_combo[index]);
         }
-        ingredients.add(-1); // signal table closed
+        table_items.put("quit"); // signal table closed
     }
 }

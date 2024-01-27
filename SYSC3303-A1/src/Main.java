@@ -7,27 +7,15 @@ public class Main
     {
         Thread agent, chef1, chef2, chef3;
         
-        Table table_ingredients;
-        table_ingredients = new Table();
-
-<<<<<<< HEAD
-        Table table_ingredients;
-        table_ingredients = new Table();
+        Table table_items;
+        table_items = new Table();
 
         // configure agent and chef threads
-        agent = new Thread(new Agent(table_ingredients),"Agent");
-        chef1 = new Thread(new Chef(table_ingredients, 1),"Chef with jam");
-        chef2 = new Thread(new Chef(table_ingredients, 2),"Chef with peanut butter");
-        chef3 = new Thread(new Chef(table_ingredients, 4),"Chef with bread");
+        agent = new Thread(new Agent(table_items, 20),"Agent");
+        chef1 = new Thread(new Chef(table_items, "jam"),"Chef with jam");
+        chef2 = new Thread(new Chef(table_items, "peanut butter"),"Chef with peanut butter");
+        chef3 = new Thread(new Chef(table_items, "bread"),"Chef with bread");
 
-=======
-        // configure agent and chef threads
-        agent = new Thread(new Agent(table_ingredients),"Agent");
-        chef1 = new Thread(new Chef(table_ingredients, 1),"Chef with jam");
-        chef2 = new Thread(new Chef(table_ingredients, 2),"Chef with peanut butter");
-        chef3 = new Thread(new Chef(table_ingredients, 4),"Chef with bread");
-
->>>>>>> 6809644fdc5260bea7c662525b77445c77f0a251
         // start all threads
         agent.start();
         chef1.start();

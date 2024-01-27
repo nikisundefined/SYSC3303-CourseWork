@@ -4,38 +4,42 @@
 public class Table
 {
     // index of ingredient combination on the table
-    private int ingredients;
+    private String table_items;
     // table status
     private boolean empty = true;
 
     //  method to put ingredients on the table
-    public synchronized void add(int supply)
+    public synchronized void put(String supply)
     {
         while (!empty) // wait while table is full
         {
             try {wait();}
             catch (InterruptedException e) {System.err.println(e);}
         }
-        ingredients = supply; // put ingredients on the table
+        table_items = supply; // put ingredients on the table
         empty = false; // table is full
         notifyAll(); // notify all threads
     }
 
     //  method to remove ingredients from the table
-    public synchronized int take()
+    public synchronized String get()
     {
+        String items; // temporary storage for table items
+
         while (empty) // wait while table is empty
         {
             try {wait();}
             catch (InterruptedException e) {System.err.println(e);}
         }
+        items = table_items;
+        table_items = "";
         empty = true; // remove ingredients from the table
         notifyAll(); // notify all threads
-        return ingredients; // return id for the ingredient combo removed from the table
+        return items; // return ingredient combo removed from the table
     }
 
     //  method to show what ingredients are on the table
-    public synchronized int check()
+    public synchronized String check()
     {
         while (empty) // wait while table is empty
         {
@@ -43,6 +47,6 @@ public class Table
             catch (InterruptedException e) {System.err.println(e);}
         }
         notifyAll(); // notify all threads
-        return ingredients; // return id for the ingredient combo currently on the table
+        return table_items; // return id for the ingredient combo currently on the table
     }
 }
