@@ -1,12 +1,7 @@
-public class BoundedBuffer
+public class Table
 {
-    // a simple ring buffer is used to hold the data
-    // buffer capacity
-    ///private static final int SIZE = 1;
-    ///private Object[] buffer = new Object[SIZE];
+    // a simple 1 integer buffer is used to hold the combination of ingredients on the table
     private int buffer;
-    ///private int head = 0, tail = 0, count = 0;
-
     // If true, there is room for at least one object
     // in the buffer.
     private boolean writeable = true;
@@ -15,7 +10,6 @@ public class BoundedBuffer
     // in the buffer.
     private boolean readable = false;
 
-    ///public synchronized void addLast(Object item)
     public synchronized void addLast(int item)
     {
         while (!writeable)
@@ -23,44 +17,30 @@ public class BoundedBuffer
             try {wait();}
             catch (InterruptedException e) {System.err.println(e);}
         }
-
-        ///buffer[tail] = item;
         buffer = item;
-        ///tail = 1;
-        ///count++;
         readable = true;
-        ///if (count == SIZE) writeable = false;
         writeable = false;
         notifyAll();
     }
 
-    ///public synchronized Object removeFirst()
     public synchronized int removeFirst()
     {
-        ///Object item;
         int item;
-
-        while (!readable)
+        while (!readable)//if the buffer isn't full
         {
             try {wait();}
             catch (InterruptedException e) {System.err.println(e);}
         }
-
-        ///item = buffer[head];
-        item = buffer;
-        buffer = 0;
-        ///head = 1;
-        ///count--;
-        writeable = true;
-        ///if (count == 0) readable = false;
-        readable = false;
-        notifyAll();
-        return item;
+        item = buffer;//save the value of the buffer
+        buffer = 0;//remove the item stored in the buffer
+        writeable = true;//flag that the buffer has room
+        readable = false;//flag that the buffer cannot be read
+        notifyAll();//notify all the observers(chefs)
+        return item;//return the value of the item taken from the buffer
     }
 
-    public synchronized int CheckTable(){
-
-        while (!readable)
+    public synchronized int CheckTable(){//method to see what's on the table to decide what chef will take it
+        while (!readable)//while there's an item in the buffer check what it is
         {
             try {wait();}
             catch (InterruptedException e) {System.err.println(e);}

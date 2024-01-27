@@ -1,18 +1,17 @@
 /**
  * Producer is the class for the producer thread. AGENT
  */
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-class Producer implements Runnable
+class Agent implements Runnable
 {
     String[] ingname = {"Peanut Butter and Bread","Bread and Jam","Peanut Butter and Jam"};
 
     ///private BoundedBuffer buffer;
-    private BoundedBuffer buffer;
+    private Table buffer;
 
     ///public Producer(BoundedBuffer buf)
-    public Producer(BoundedBuffer buf)
+    public Agent(Table buf)
     {
         buffer = buf;
     }
