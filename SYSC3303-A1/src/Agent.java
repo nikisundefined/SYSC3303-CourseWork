@@ -1,33 +1,32 @@
 /**
- * Producer is the class for the producer thread. AGENT
+ * AGENT is the class for the agent thread.
  */
 import java.util.concurrent.ThreadLocalRandom;
 
 class Agent implements Runnable
 {
-    String[] ingname = {"Peanut Butter and Bread","Bread and Jam","Peanut Butter and Jam"};
+    // list of unique ingredient combos
+    String[] combo_name = {"peanut butter and bread","bread and jam","peanut butter and jam"};
+    private Table ingredients;
 
-    ///private BoundedBuffer buffer;
-    private Table buffer;
-
-    ///public Producer(BoundedBuffer buf)
-    public Agent(Table buf)
+    public Agent(Table table_ingredients)
     {
-        buffer = buf;
+        ingredients = table_ingredients;
     }
 
     public void run()
     {
         for(int i = 0; i < 20; i++)
         {
-            int item = ThreadLocalRandom.current().nextInt(3);
-            buffer.addLast(item);
+            int index = ThreadLocalRandom.current().nextInt(3); // random index of ingredient combo
+            ingredients.add(index); // place ingredient combo on the table
 
-            System.out.println(i+ " " +Thread.currentThread().getName() + " produced " + ingname[item]);
+            // announce ingredient combo placed on the table
+            System.out.println(i+ " " +Thread.currentThread().getName() + " supplied " + combo_name[index]);
 
-            try {Thread.sleep(500);}
+            try {Thread.sleep(250);}
             catch (InterruptedException e) {}
         }
-        buffer.addLast(-1);
+        ingredients.add(-1); // signal table closed
     }
 }
