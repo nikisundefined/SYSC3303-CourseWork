@@ -7,10 +7,8 @@ class Agent implements Runnable
 {
     String[] ingname = {"Peanut Butter and Bread","Bread and Jam","Peanut Butter and Jam"};
 
-    ///private BoundedBuffer buffer;
     private Table buffer;
 
-    ///public Producer(BoundedBuffer buf)
     public Agent(Table buf)
     {
         buffer = buf;
