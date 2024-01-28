@@ -1,12 +1,13 @@
 /**
  * MAIN is the class that configures and starts all threads.
+ * Written by Nicholas Nemec - 101211060
  */
 public class Main
 {
     public static void main(String[] args)
     {
         Thread agent, chef1, chef2, chef3;
-        
+
         Table table_items;
         table_items = new Table();
 

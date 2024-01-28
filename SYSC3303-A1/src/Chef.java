@@ -1,5 +1,6 @@
 /**
  * CHEF is the class for the chef thread.
+ * Written by Nicholas Nemec - 101211060
  */
 class Chef implements Runnable
 {
