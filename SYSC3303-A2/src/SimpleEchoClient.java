@@ -1,11 +1,9 @@
-// SimpleEchoClient.java
-// This class is the client side for a simple echo server based on
-// UDP/IP. The client sends a character string to the echo server, then waits 
-// for the server to send it back to the client.
-// Last edited January 9th, 2016
-
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+
+
 
 public class SimpleEchoClient {
 
@@ -25,37 +23,13 @@ public class SimpleEchoClient {
       }
    }
 
-   public void sendAndReceive()
+   public void sendAndReceive(byte[] msg)
    {
-      // Prepare a DatagramPacket and send it via sendReceiveSocket
-      // to port 5000 on the destination host.
- 
-      String s = "Anyone there?";
-      System.out.println("Client: sending a packet containing:\n" + s);
+      String str = new String(msg, StandardCharsets.UTF_8);
+      System.out.println("Client: sending a packet containing:\n" + str);
 
-      // Java stores characters as 16-bit Unicode values, but 
-      // DatagramPackets store their messages as byte arrays.
-      // Convert the String into bytes according to the platform's 
-      // default character encoding, storing the result into a new 
-      // byte array.
-
-      byte msg[] = s.getBytes();
-
-      // Construct a datagram packet that is to be sent to a specified port 
-      // on a specified host.
-      // The arguments are:
-      //  msg - the message contained in the packet (the byte array)
-      //  msg.length - the length of the byte array
-      //  InetAddress.getLocalHost() - the Internet address of the 
-      //     destination host.
-      //     In this example, we want the destination to be the same as
-      //     the source (i.e., we want to run the client and server on the
-      //     same computer). InetAddress.getLocalHost() returns the Internet
-      //     address of the local host.
-      //  5000 - the destination port number on the destination host.
       try {
-         sendPacket = new DatagramPacket(msg, msg.length,
-                                         InetAddress.getLocalHost(), 5000);
+         sendPacket = new DatagramPacket(msg, msg.length, InetAddress.getLocalHost(), 5000);
       } catch (UnknownHostException e) {
          e.printStackTrace();
          System.exit(1);
@@ -80,8 +54,10 @@ public class SimpleEchoClient {
 
       System.out.println("Client: Packet sent.\n");
 
-      // Construct a DatagramPacket for receiving packets up 
-      // to 100 bytes long (the length of the byte array).
+      if(msg[1] == (byte)3){
+         System.out.println("Client socket closed.");
+         sendReceiveSocket.close();
+      }
 
       byte data[] = new byte[100];
       receivePacket = new DatagramPacket(data, data.length);
@@ -105,14 +81,31 @@ public class SimpleEchoClient {
       // Form a String from the byte array.
       String received = new String(data,0,len);   
       System.out.println(received);
+   }
 
-      // We're finished, so close the socket.
-      sendReceiveSocket.close();
+   public static byte[] createServerRequest(byte rw, String filename, String mode){
+      byte[] read = new byte[]{0,rw};
+      byte[] z = new byte[]{0};
+      byte[] message = new byte[read.length + z.length + filename.getBytes().length + mode.getBytes().length + z.length];
+      System.arraycopy(read,0,message,0,read.length);
+      System.arraycopy(filename.getBytes(),0,message,read.length,filename.getBytes().length);
+      System.arraycopy(z,0,message,read.length + filename.getBytes().length,z.length);
+      System.arraycopy(mode.getBytes(),0,message,read.length + filename.getBytes().length + z.length,mode.getBytes().length);
+      System.arraycopy(z,0,message,read.length + filename.getBytes().length + z.length +mode.getBytes().length,z.length);
+      return message;
    }
 
    public static void main(String args[])
    {
       SimpleEchoClient c = new SimpleEchoClient();
-      c.sendAndReceive();
+      for(int i=0; i<11; i++){
+         if(i%2 > 0){
+            c.sendAndReceive(createServerRequest((byte)1,"filename.txt","read")); // read
+         }
+         else {
+            c.sendAndReceive(createServerRequest((byte)2,"filename.txt","write")); // write
+         }
+      }
+      c.sendAndReceive(createServerRequest((byte)3,"shutdown","off")); // invalid
    }
 }
