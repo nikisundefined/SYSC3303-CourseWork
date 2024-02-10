@@ -5,8 +5,31 @@ import java.nio.charset.StandardCharsets;
 
 public class Client {
 
-   DatagramPacket sendPacket, receivePacket, receivePacket2;
+   DatagramPacket sendPacket, receivePacket;
    DatagramSocket sendReceiveSocket;
+
+   public static byte[] makeReadable(byte[] b){
+      byte[] printable = new byte[b.length];
+      // this loop will make it so that the data sent in the packet is
+      // printable in the UTF-8 format as characters from 0-9 do not
+      // show unless shifted up by 48 to display their ascii equivalents
+      for(int i = 0;i<b.length;i++){
+         if(b[i]<10) {
+            printable[i] = (byte) (b[i] + 48);
+         } else {
+            printable[i] = b[i];
+         }
+      }
+      return printable;
+   }
+
+   public static String byteToHex(byte[] b){
+      final StringBuilder builder = new StringBuilder();
+      for(byte e : b){
+         builder.append(String.format("%02x ",e));
+      }
+      return builder.toString();
+   }
 
    public Client()
    {
@@ -23,18 +46,6 @@ public class Client {
 
    public void sendAndReceive(byte[] msg)
    {
-      byte[] printable = new byte[msg.length];
-
-      for(int i = 0;i<msg.length;i++){ // this loop will make it so that the data sent in the packet is printable in the UTF-8 format as characters from 0-9 do not show unless shifted up by 48 to display their ascii equivalents
-         if(msg[i]<10) {
-            printable[i] = (byte) (msg[i] + 48);
-         } else {
-            printable[i] = msg[i];
-         }
-      }
-
-      String s = new String(printable, StandardCharsets.UTF_8); // data packet as a string
-      System.out.println("Client: sending a packet containing:\n" + s);
 
       try {
          sendPacket = new DatagramPacket(msg, msg.length, InetAddress.getLocalHost(), 23);
@@ -43,13 +54,13 @@ public class Client {
          System.exit(1);
       }
 
-      System.out.println("Client: Sending packet:");
-      System.out.println("To host: " + sendPacket.getAddress());
-      System.out.println("Destination host port: " + sendPacket.getPort());
-      int len = sendPacket.getLength();
-      System.out.println("Length: " + len);
-
-      // Send the datagram packet to the server via the send/receive socket. 
+      System.out.println("CLIENT> Sending packet");
+      System.out.println("Host: " + sendPacket.getAddress());
+      System.out.println("Port: " + sendPacket.getPort());
+      System.out.println("Length: " + sendPacket.getLength());
+      String s = new String(makeReadable(msg), StandardCharsets.UTF_8); // data packet as a string
+      System.out.println("Content String: " + s);
+      System.out.println("Content Bytes: "+ byteToHex(msg)+"\n");
 
       try {
          sendReceiveSocket.send(sendPacket);
@@ -58,17 +69,17 @@ public class Client {
          System.exit(1);
       }
 
-      System.out.println("Client: Packet sent.\n");
+      System.out.println("CLIENT> Packet sent.\n");
       if(msg[1] == (byte)3){
          System.out.println("Client socket closed.");
          sendReceiveSocket.close();
          System.exit(1);
       }
-      byte data[] = new byte[20];
+      byte data[] = new byte[4];
       receivePacket = new DatagramPacket(data, data.length);
 
       try {
-         // Block until a datagram is received via sendReceiveSocket.  
+         System.out.println("Waiting...\n");
          sendReceiveSocket.receive(receivePacket);
       } catch(IOException e) {
          e.printStackTrace();
@@ -76,16 +87,14 @@ public class Client {
       }
 
       // Process the received datagram.
-      System.out.println("Client: Packet received:");
-      System.out.println("From host: " + receivePacket.getAddress());
-      System.out.println("Host port: " + receivePacket.getPort());
-      len = receivePacket.getLength();
-      System.out.println("Length: " + len);
-      System.out.print("Containing: ");
+      System.out.println("CLIENT> Packet received");
+      System.out.println("Host: " + receivePacket.getAddress());
+      System.out.println("Port: " + receivePacket.getPort());
+      System.out.println("Length: " + receivePacket.getLength());
 
-      // Form a String from the byte array.
-      String received = new String(data,0,len);   
-      System.out.println(received);
+      String s2 = new String(makeReadable(data), StandardCharsets.UTF_8);
+      System.out.println("Content String: " + s2);
+      System.out.println("Content Bytes: "+ byteToHex(data)+"\n");
    }
 
    public static byte[] createServerRequest(byte rw, String filename, String mode){

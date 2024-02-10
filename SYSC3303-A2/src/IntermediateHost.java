@@ -7,20 +7,33 @@ public class IntermediateHost {
     DatagramPacket sendPacket, receivePacket;
     DatagramSocket sendSocket, receiveSocket;
 
+    public static byte[] makeReadable(byte[] b){
+        byte[] printable = new byte[b.length];
+        // this loop will make it so that the data sent in the packet is
+        // printable in the UTF-8 format as characters from 0-9 do not
+        // show unless shifted up by 48 to display their ascii equivalents
+        for(int i = 0;i<b.length;i++){
+            if(b[i]<10) {
+                printable[i] = (byte) (b[i] + 48);
+            } else {
+                printable[i] = b[i];
+            }
+        }
+        return printable;
+    }
+
+    public static String byteToHex(byte[] b){
+        final StringBuilder builder = new StringBuilder();
+        for(byte e : b){
+            builder.append(String.format("%02x ",e));
+        }
+        return builder.toString();
+    }
+
     public IntermediateHost(){
         try {
-            // Construct a datagram socket and bind it to any available
-            // port on the local host machine. This socket will be used to
-            // send UDP Datagram packets.
             sendSocket = new DatagramSocket();
-
-            // Construct a datagram socket and bind it to port 23
-            // on the local host machine. This socket will be used to
-            // receive UDP Datagram packets.
             receiveSocket = new DatagramSocket(23);
-
-            // to test socket timeout (2 seconds)
-            //receiveSocket.setSoTimeout(2000);
         } catch (SocketException se) {
             se.printStackTrace();
             System.exit(1);
@@ -30,45 +43,35 @@ public class IntermediateHost {
     public void receiveAndPass(){
         while(true){
             byte[] data = new byte[20];
+
             int clientPort;
             InetAddress clientAd;
+
             receivePacket = new DatagramPacket(data, data.length);
-            System.out.println("Intermediate Host: Waiting for Packet.\n");
+
+            System.out.println("INTERMEDIATE HOST> Waiting for Packet.\n");
 
             try {
-                System.out.println("Waiting..."); // so we know we're waiting
+                System.out.println("Waiting...\n"); // so we know we're waiting
                 receiveSocket.receive(receivePacket);
             } catch (IOException e) {
-                System.out.print("IO Exception: likely:");
+                System.out.println("IO Exception: likely:");
                 System.out.println("Receive Socket Timed Out.\n" + e);
                 e.printStackTrace();
                 System.exit(1);
             }
+
             clientPort = receivePacket.getPort();
-            clientAd = receivePacket.getAddress();
-            System.out.println("Intermediate Host: Packet received:");
 
-            int len = receivePacket.getLength();
+            System.out.println("INTERMEDIATE HOST> Packet received");
 
-            byte[] printable = new byte[data.length];
+            String s = new String(makeReadable(data), StandardCharsets.UTF_8); // data packet as a string
+            System.out.println("Host: " + receivePacket.getAddress());
+            System.out.println("Port: " + receivePacket.getPort());
+            System.out.println("Length: " + receivePacket.getLength());
+            System.out.println("Content String: " + s);
+            System.out.println("Content Bytes: "+ byteToHex(data)+"\n");
 
-            for(int i = 0;i<data.length;i++){ // this loop will make it so that the data sent in the packet is printable in the UTF-8 format as characters from 0-9 do not show unless shifted up by 48 to display their ascii equivalents
-                if(data[i]<10) {
-                    printable[i] = (byte) (data[i] + 48);
-                } else {
-                    printable[i] = data[i];
-                }
-            }
-
-            String s = new String(printable, StandardCharsets.UTF_8); // data packet as a string
-
-            System.out.print("String: " + s+"\n");
-            System.out.println("Bytes: ");
-            for(byte b : data){
-                System.out.println(b);
-            }
-
-            // Slow things down (wait 5 seconds)
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -84,11 +87,12 @@ public class IntermediateHost {
                 System.exit(1);
             }
 
-            System.out.println("Intermediate Host: Sending packet:");
-            System.out.println("To host: " + sendPacket.getAddress());
-            System.out.println("Destination host port: " + sendPacket.getPort());
-            len = sendPacket.getLength();
-            System.out.println("Length: " + len);
+            System.out.println("INTERMEDIATE HOST> Sending packet");
+            System.out.println("Host: " + sendPacket.getAddress());
+            System.out.println("Port: " + sendPacket.getPort());
+            System.out.println("Length: " + sendPacket.getLength());
+            System.out.println("Content String: " + s);
+            System.out.println("Content Bytes: "+ byteToHex(data)+"\n");
 
             try {
                 sendSocket.send(sendPacket);
@@ -96,12 +100,7 @@ public class IntermediateHost {
                 e.printStackTrace();
                 System.exit(1);
             }
-            System.out.println("Intermediate Host: packet sent");
-            System.out.println("String: " + s + "\n");
-            System.out.println("Bytes: ");
-            for(byte b : data){
-                System.out.println(b);
-            }
+            System.out.println("INTERMEDIATE HOST> packet sent\n");
 
             byte serverData[] = new byte[4];
             receivePacket = new DatagramPacket(serverData, serverData.length);
@@ -111,10 +110,11 @@ public class IntermediateHost {
                 sendSocket.close();
                 System.exit(1);
             }
-            System.out.println("Intermediate Host: Waiting for Packet.\n");
+
+            System.out.println("INTERMEDIATE HOST> Waiting for Packet.\n");
             // Block until a datagram packet is received from receiveSocket.
             try {
-                System.out.println("Waiting..."); // so we know we're waiting
+                System.out.println("Waiting...\n"); // so we know we're waiting
                 receiveSocket.receive(receivePacket);
             } catch (IOException e) {
                 System.out.print("IO Exception: likely:");
@@ -122,27 +122,15 @@ public class IntermediateHost {
                 e.printStackTrace();
                 System.exit(1);
             }
-            System.out.println("Intermediate Host: Packet received:");
+            System.out.println("INTERMEDIATE HOST> Packet received");
 
-            len = receivePacket.getLength();
+            String s2 = new String(makeReadable(serverData), StandardCharsets.UTF_8);
 
-            byte[] printable2 = new byte[serverData.length];
-
-            for(int i = 0;i<serverData.length;i++){ // this loop will make it so that the data sent in the packet is printable in the UTF-8 format as characters from 0-9 do not show unless shifted up by 48 to display their ascii equivalents
-                if(serverData[i]<10) {
-                    printable2[i] = (byte) (serverData[i] + 48);
-                } else {
-                    printable2[i] = serverData[i];
-                }
-            }
-
-            String s2 = new String(printable2, StandardCharsets.UTF_8);
-
-            System.out.print("String: " + s2+"\n");
-            System.out.println("Bytes: ");
-            for(byte b : serverData){
-                System.out.println(b);
-            }
+            System.out.println("Host: " + receivePacket.getAddress());
+            System.out.println("Port: " + receivePacket.getPort());
+            System.out.println("Length: " + receivePacket.getLength());
+            System.out.println("Content String: " + s2);
+            System.out.println("Content Bytes: "+ byteToHex(serverData)+"\n");
 
 
             // Slow things down (wait 5 seconds)
@@ -152,14 +140,21 @@ public class IntermediateHost {
                 e.printStackTrace();
                 System.exit(1);
             }
-            sendPacket = new DatagramPacket(serverData, receivePacket.getLength(),
-                    clientAd, clientPort);
 
-            System.out.println("Intermediate: Sending packet:");
-            System.out.println("To host: " + sendPacket.getAddress());
-            System.out.println("Destination host port: " + sendPacket.getPort());
-            len = sendPacket.getLength();
-            System.out.println("Length: " + len);
+            try{
+                sendPacket = new DatagramPacket(serverData, receivePacket.getLength(),
+                        InetAddress.getLocalHost(), clientPort);
+            } catch(UnknownHostException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+
+            System.out.println("INTERMEDIATE HOST> Sending packet");
+            System.out.println("Host: " + sendPacket.getAddress());
+            System.out.println("Port: " + clientPort);
+            System.out.println("Length: " + sendPacket.getLength());
+            System.out.println("Content String: " + s2);
+            System.out.println("Content Bytes: "+ byteToHex(serverData)+"\n");
 
             try {
                 sendSocket.send(sendPacket);
@@ -168,7 +163,7 @@ public class IntermediateHost {
                 System.exit(1);
             }
 
-            System.out.println("Intermediate: packet sent");
+            System.out.println("INTERMEDIATE HOST> Packet sent.\n");
         }
     }
     public static void main( String args[] )

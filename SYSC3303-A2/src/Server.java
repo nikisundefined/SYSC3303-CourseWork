@@ -16,9 +16,24 @@ public class Server {
    public static String byteToHex(byte[] b){
       final StringBuilder builder = new StringBuilder();
       for(byte e : b){
-         builder.append(String.format("%02x:",e));
+         builder.append(String.format("%02x ",e));
       }
       return builder.toString();
+   }
+
+   public static byte[] makeReadable(byte[] b){
+      byte[] printable = new byte[b.length];
+      // this loop will make it so that the data sent in the packet is
+      // printable in the UTF-8 format as characters from 0-9 do not
+      // show unless shifted up by 48 to display their ascii equivalents
+      for(int i = 0;i<b.length;i++){
+         if(b[i]<10) {
+            printable[i] = (byte) (b[i] + 48);
+         } else {
+            printable[i] = b[i];
+         }
+      }
+      return printable;
    }
 
    public Server()
@@ -42,11 +57,11 @@ public class Server {
       while(true) {
          byte data[] = new byte[20];
          receivePacket = new DatagramPacket(data, data.length);
-         System.out.println("Server: Waiting for Packet.\n");
+         System.out.println("SERVER> Waiting for Packet.\n");
 
          // Block until a datagram packet is received from receiveSocket.
          try {
-            System.out.println("Waiting..."); // so we know we're waiting
+            System.out.println("Waiting..."+"\n"); // so we know we're waiting
             receiveSocket.receive(receivePacket);
          } catch (IOException e) {
             System.out.print("IO Exception: likely:");
@@ -56,21 +71,9 @@ public class Server {
          }
 
          // Process the received datagram.
-         System.out.println("Server: Packet received:");
+         System.out.println("SERVER> Packet received");
 
-         int len = receivePacket.getLength();
-
-         byte[] printable = new byte[data.length];
-
-         for(int i = 0;i<data.length;i++){ // this loop will make it so that the data sent in the packet is printable in the UTF-8 format as characters from 0-9 do not show unless shifted up by 48 to display their ascii equivalents
-            if(data[i]<10) {
-               printable[i] = (byte) (data[i] + 48);
-            } else {
-               printable[i] = data[i];
-            }
-         }
-
-         String s = new String(printable, StandardCharsets.UTF_8); // data packet as a string
+         String s = new String(makeReadable(data), StandardCharsets.UTF_8); // data packet as a string
          String pattern = "0[12].*?0.*?0"; // pattern template to make sure the packet is valid
 
          try{
@@ -84,8 +87,11 @@ public class Server {
             System.exit(1);
          }
 
-         System.out.println("String: " + s);
-         System.out.println("Bytes: " + byteToHex(data));
+         System.out.println("Host: " + receivePacket.getAddress());
+         System.out.println("Port: " + receivePacket.getPort());
+         System.out.println("Length: " + receivePacket.getLength());
+         System.out.println("Content String: " + s);
+         System.out.println("Content Bytes: " + byteToHex(data)+"\n");
 
          // Slow things down (wait 5 seconds)
          try {
@@ -111,35 +117,21 @@ public class Server {
             System.exit(1);
          }
 
-         System.out.println("Server: Sending packet:");
-         System.out.println("To host: " + sendPacket.getAddress());
-         System.out.println("Destination host port: " + sendPacket.getPort());
-         len = sendPacket.getLength();
-         System.out.println("Length: " + len);
-         // or (as we should be sending back the same thing)
-         // System.out.println(received);
+         String s2 = new String(makeReadable(returnMsg), StandardCharsets.UTF_8); // data packet as a string
+         System.out.println("SERVER> Sending packet");
+         System.out.println("Host: " + sendPacket.getAddress());
+         System.out.println("Port: " + sendPacket.getPort());
+         System.out.println("Length: " + sendPacket.getLength());
+         System.out.println("Content String: " + s2);
+         System.out.println("Content Bytes: " + byteToHex(returnMsg)+"\n");
 
-         // Send the datagram packet to the client via the send socket.
          try {
             sendSocket.send(sendPacket);
          } catch (IOException e) {
             e.printStackTrace();
             System.exit(1);
          }
-         byte[] printable2 = new byte[returnMsg.length];
-
-         for(int i = 0;i<returnMsg.length;i++){ // this loop will make it so that the data sent in the packet is printable in the UTF-8 format as characters from 0-9 do not show unless shifted up by 48 to display their ascii equivalents
-            if(returnMsg[i]<10) {
-               printable2[i] = (byte) (returnMsg[i] + 48);
-            } else {
-               printable2[i] = returnMsg[i];
-            }
-         }
-
-         String s2 = new String(printable2, StandardCharsets.UTF_8); // data packet as a string
-         System.out.println("Server: packet sent");
-         System.out.println("String: " + s2);
-         System.out.println("Bytes: " + byteToHex(returnMsg));
+         System.out.println("SERVER> Packet sent\n");
       }
 
    }
