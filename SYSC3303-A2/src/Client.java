@@ -1,16 +1,14 @@
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 
+public class Client {
 
-public class SimpleEchoClient {
-
-   DatagramPacket sendPacket, receivePacket;
+   DatagramPacket sendPacket, receivePacket, receivePacket2;
    DatagramSocket sendReceiveSocket;
 
-   public SimpleEchoClient()
+   public Client()
    {
       try {
          // Construct a datagram socket and bind it to any available 
@@ -25,11 +23,21 @@ public class SimpleEchoClient {
 
    public void sendAndReceive(byte[] msg)
    {
-      String str = new String(msg, StandardCharsets.UTF_8);
-      System.out.println("Client: sending a packet containing:\n" + str);
+      byte[] printable = new byte[msg.length];
+
+      for(int i = 0;i<msg.length;i++){ // this loop will make it so that the data sent in the packet is printable in the UTF-8 format as characters from 0-9 do not show unless shifted up by 48 to display their ascii equivalents
+         if(msg[i]<10) {
+            printable[i] = (byte) (msg[i] + 48);
+         } else {
+            printable[i] = msg[i];
+         }
+      }
+
+      String s = new String(printable, StandardCharsets.UTF_8); // data packet as a string
+      System.out.println("Client: sending a packet containing:\n" + s);
 
       try {
-         sendPacket = new DatagramPacket(msg, msg.length, InetAddress.getLocalHost(), 5000);
+         sendPacket = new DatagramPacket(msg, msg.length, InetAddress.getLocalHost(), 23);
       } catch (UnknownHostException e) {
          e.printStackTrace();
          System.exit(1);
@@ -40,8 +48,6 @@ public class SimpleEchoClient {
       System.out.println("Destination host port: " + sendPacket.getPort());
       int len = sendPacket.getLength();
       System.out.println("Length: " + len);
-      System.out.print("Containing: ");
-      System.out.println(new String(sendPacket.getData(),0,len)); // or could print "s"
 
       // Send the datagram packet to the server via the send/receive socket. 
 
@@ -59,7 +65,7 @@ public class SimpleEchoClient {
          sendReceiveSocket.close();
       }
 
-      byte data[] = new byte[100];
+      byte data[] = new byte[20];
       receivePacket = new DatagramPacket(data, data.length);
 
       try {
@@ -97,15 +103,15 @@ public class SimpleEchoClient {
 
    public static void main(String args[])
    {
-      SimpleEchoClient c = new SimpleEchoClient();
+      Client c = new Client();
       for(int i=0; i<11; i++){
          if(i%2 > 0){
-            c.sendAndReceive(createServerRequest((byte)1,"filename.txt","read")); // read
+            c.sendAndReceive(createServerRequest((byte)1,"filename.txt","mode")); // read
          }
          else {
-            c.sendAndReceive(createServerRequest((byte)2,"filename.txt","write")); // write
+            c.sendAndReceive(createServerRequest((byte)2,"filename.txt","mode")); // write
          }
       }
-      c.sendAndReceive(createServerRequest((byte)3,"shutdown","off")); // invalid
+      c.sendAndReceive(createServerRequest((byte)3,"filename.txt","mode")); // invalid
    }
 }

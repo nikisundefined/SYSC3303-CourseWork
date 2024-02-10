@@ -4,15 +4,16 @@
 // string, then echoes the string back to the client.
 // Last edited January 9th, 2016
 
-import java.io.*;
+import java.io.IOException;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 
-public class SimpleEchoServer {
+public class Server {
 
    DatagramPacket sendPacket, receivePacket;
    DatagramSocket sendSocket, receiveSocket;
 
-   public SimpleEchoServer()
+   public Server()
    {
       try {
          // Construct a datagram socket and bind it to any available 
@@ -23,7 +24,7 @@ public class SimpleEchoServer {
          // Construct a datagram socket and bind it to port 5000 
          // on the local host machine. This socket will be used to
          // receive UDP Datagram packets.
-         receiveSocket = new DatagramSocket(5000);
+         receiveSocket = new DatagramSocket(69);
          
          // to test socket timeout (2 seconds)
          //receiveSocket.setSoTimeout(2000);
@@ -38,7 +39,7 @@ public class SimpleEchoServer {
       // Construct a DatagramPacket for receiving packets up 
       // to 100 bytes long (the length of the byte array).
       while(true) {
-         byte data[] = new byte[100];
+         byte data[] = new byte[20];
          receivePacket = new DatagramPacket(data, data.length);
          System.out.println("Server: Waiting for Packet.\n");
 
@@ -55,21 +56,38 @@ public class SimpleEchoServer {
 
          // Process the received datagram.
          System.out.println("Server: Packet received:");
-         System.out.println("From host: " + receivePacket.getAddress());
-         System.out.println("Host port: " + receivePacket.getPort());
-         int len = receivePacket.getLength();
-         System.out.println("Length: " + len);
-         System.out.print("Containing: ");
-         // Form a String from the byte array.
-         String received = new String(data, 0, len);
-         System.out.println(received + "\n");
 
-         if(data[1] == (byte)3){
-            // We're finished, so close the sockets.
-            System.out.println("Server sockets closed.");
-            sendSocket.close();
-            receiveSocket.close();
-            break;
+         int len = receivePacket.getLength();
+
+         byte[] printable = new byte[data.length];
+
+         for(int i = 0;i<data.length;i++){ // this loop will make it so that the data sent in the packet is printable in the UTF-8 format as characters from 0-9 do not show unless shifted up by 48 to display their ascii equivalents
+            if(data[i]<10) {
+               printable[i] = (byte) (data[i] + 48);
+            } else {
+               printable[i] = data[i];
+            }
+         }
+
+         String s = new String(printable, StandardCharsets.UTF_8); // data packet as a string
+         String pattern = "0[12].*?0.*?0"; // pattern template to make sure the packet is valid
+
+         try{
+            if(!(s.matches(pattern))){
+               sendSocket.close();
+               receiveSocket.close();
+               throw new IllegalArgumentException("Invalid Packet Received");
+            }
+         } catch(IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
+            System.exit(1);
+         }
+
+
+         System.out.print("String: " + s+"\n");
+         System.out.println("Bytes: ");
+         for(byte b : data){
+            System.out.println(b);
          }
 
          // Slow things down (wait 5 seconds)
@@ -80,39 +98,30 @@ public class SimpleEchoServer {
             System.exit(1);
          }
 
-         // Create a new datagram packet containing the string received from the client.
+         byte[] returnMsg = {0, 0, 0, 0};
+         if(data[1]==(byte)1) {
+            returnMsg[1] = 3;
+            returnMsg[3] = 1;
+         } else {
+            returnMsg[1] = 4;
+         }
 
-         // Construct a datagram packet that is to be sent to a specified port
-         // on a specified host.
-         // The arguments are:
-         //  data - the packet data (a byte array). This is the packet data
-         //         that was received from the client.
-         //  receivePacket.getLength() - the length of the packet data.
-         //    Since we are echoing the received packet, this is the length
-         //    of the received packet's data.
-         //    This value is <= data.length (the length of the byte array).
-         //  receivePacket.getAddress() - the Internet address of the
-         //     destination host. Since we want to send a packet back to the
-         //     client, we extract the address of the machine where the
-         //     client is running from the datagram that was sent to us by
-         //     the client.
-         //  receivePacket.getPort() - the destination port number on the
-         //     destination host where the client is running. The client
-         //     sends and receives datagrams through the same socket/port,
-         //     so we extract the port that the client used to send us the
-         //     datagram, and use that as the destination port for the echoed
-         //     packet.
+         try{
+            sendPacket = new DatagramPacket(returnMsg, returnMsg.length,
+                    InetAddress.getLocalHost(), 23);
+         } catch(UnknownHostException e) {
+            e.printStackTrace();
+            System.exit(1);
+         }
 
-         sendPacket = new DatagramPacket(data, receivePacket.getLength(),
-                 receivePacket.getAddress(), receivePacket.getPort());
+
+
 
          System.out.println("Server: Sending packet:");
          System.out.println("To host: " + sendPacket.getAddress());
          System.out.println("Destination host port: " + sendPacket.getPort());
          len = sendPacket.getLength();
          System.out.println("Length: " + len);
-         System.out.print("Containing: ");
-         System.out.println(new String(sendPacket.getData(), 0, len));
          // or (as we should be sending back the same thing)
          // System.out.println(received);
 
@@ -123,15 +132,30 @@ public class SimpleEchoServer {
             e.printStackTrace();
             System.exit(1);
          }
+         byte[] printable2 = new byte[returnMsg.length];
 
+         for(int i = 0;i<returnMsg.length;i++){ // this loop will make it so that the data sent in the packet is printable in the UTF-8 format as characters from 0-9 do not show unless shifted up by 48 to display their ascii equivalents
+            if(returnMsg[i]<10) {
+               printable2[i] = (byte) (returnMsg[i] + 48);
+            } else {
+               printable2[i] = returnMsg[i];
+            }
+         }
+
+         String s2 = new String(printable2, StandardCharsets.UTF_8); // data packet as a string
          System.out.println("Server: packet sent");
+         System.out.println("String: " + s2 + "\n");
+         System.out.println("Bytes: ");
+         for(byte b : returnMsg){
+            System.out.println(b);
+         }
       }
 
    }
 
    public static void main( String args[] )
    {
-      SimpleEchoServer c = new SimpleEchoServer();
+      Server c = new Server();
       c.receiveAndEcho();
    }
 }
