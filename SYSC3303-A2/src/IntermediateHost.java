@@ -30,6 +30,8 @@ public class IntermediateHost {
     public void receiveAndPass(){
         while(true){
             byte[] data = new byte[20];
+            int clientPort;
+            InetAddress clientAd;
             receivePacket = new DatagramPacket(data, data.length);
             System.out.println("Intermediate Host: Waiting for Packet.\n");
 
@@ -42,7 +44,8 @@ public class IntermediateHost {
                 e.printStackTrace();
                 System.exit(1);
             }
-
+            clientPort = receivePacket.getPort();
+            clientAd = receivePacket.getAddress();
             System.out.println("Intermediate Host: Packet received:");
 
             int len = receivePacket.getLength();
@@ -93,7 +96,7 @@ public class IntermediateHost {
                 e.printStackTrace();
                 System.exit(1);
             }
-            System.out.println("Server: packet sent");
+            System.out.println("Intermediate Host: packet sent");
             System.out.println("String: " + s + "\n");
             System.out.println("Bytes: ");
             for(byte b : data){
@@ -102,8 +105,13 @@ public class IntermediateHost {
 
             byte serverData[] = new byte[4];
             receivePacket = new DatagramPacket(serverData, serverData.length);
+            if(data[1] == (byte)3){
+                System.out.println("Intermediate Host sockets closed.");
+                receiveSocket.close();
+                sendSocket.close();
+                System.exit(1);
+            }
             System.out.println("Intermediate Host: Waiting for Packet.\n");
-
             // Block until a datagram packet is received from receiveSocket.
             try {
                 System.out.println("Waiting..."); // so we know we're waiting
@@ -136,15 +144,16 @@ public class IntermediateHost {
                 System.out.println(b);
             }
 
+
             // Slow things down (wait 5 seconds)
             try {
-                Thread.sleep(1000);
+                Thread.sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 System.exit(1);
             }
             sendPacket = new DatagramPacket(serverData, receivePacket.getLength(),
-                    receivePacket.getAddress(), receivePacket.getPort());
+                    clientAd, clientPort);
 
             System.out.println("Intermediate: Sending packet:");
             System.out.println("To host: " + sendPacket.getAddress());

@@ -59,12 +59,11 @@ public class Client {
       }
 
       System.out.println("Client: Packet sent.\n");
-
       if(msg[1] == (byte)3){
          System.out.println("Client socket closed.");
          sendReceiveSocket.close();
+         System.exit(1);
       }
-
       byte data[] = new byte[20];
       receivePacket = new DatagramPacket(data, data.length);
 

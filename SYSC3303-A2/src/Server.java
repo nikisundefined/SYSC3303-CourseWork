@@ -13,17 +13,18 @@ public class Server {
    DatagramPacket sendPacket, receivePacket;
    DatagramSocket sendSocket, receiveSocket;
 
+   public static String byteToHex(byte[] b){
+      final StringBuilder builder = new StringBuilder();
+      for(byte e : b){
+         builder.append(String.format("%02x:",e));
+      }
+      return builder.toString();
+   }
+
    public Server()
    {
       try {
-         // Construct a datagram socket and bind it to any available 
-         // port on the local host machine. This socket will be used to
-         // send UDP Datagram packets.
          sendSocket = new DatagramSocket();
-
-         // Construct a datagram socket and bind it to port 5000 
-         // on the local host machine. This socket will be used to
-         // receive UDP Datagram packets.
          receiveSocket = new DatagramSocket(69);
          
          // to test socket timeout (2 seconds)
@@ -83,16 +84,12 @@ public class Server {
             System.exit(1);
          }
 
-
-         System.out.print("String: " + s+"\n");
-         System.out.println("Bytes: ");
-         for(byte b : data){
-            System.out.println(b);
-         }
+         System.out.println("String: " + s);
+         System.out.println("Bytes: " + byteToHex(data));
 
          // Slow things down (wait 5 seconds)
          try {
-            Thread.sleep(1000);
+            Thread.sleep(500);
          } catch (InterruptedException e) {
             e.printStackTrace();
             System.exit(1);
@@ -113,9 +110,6 @@ public class Server {
             e.printStackTrace();
             System.exit(1);
          }
-
-
-
 
          System.out.println("Server: Sending packet:");
          System.out.println("To host: " + sendPacket.getAddress());
@@ -144,11 +138,8 @@ public class Server {
 
          String s2 = new String(printable2, StandardCharsets.UTF_8); // data packet as a string
          System.out.println("Server: packet sent");
-         System.out.println("String: " + s2 + "\n");
-         System.out.println("Bytes: ");
-         for(byte b : returnMsg){
-            System.out.println(b);
-         }
+         System.out.println("String: " + s2);
+         System.out.println("Bytes: " + byteToHex(returnMsg));
       }
 
    }
