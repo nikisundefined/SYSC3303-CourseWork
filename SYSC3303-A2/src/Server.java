@@ -1,8 +1,3 @@
-// SimpleEchoServer.java
-// This class is the server side of a simple echo server based on
-// UDP/IP. The server receives from a client a packet containing a character
-// string, then echoes the string back to the client.
-// Last edited January 9th, 2016
 
 import java.io.IOException;
 import java.net.*;
@@ -41,19 +36,14 @@ public class Server {
       try {
          sendSocket = new DatagramSocket();
          receiveSocket = new DatagramSocket(69);
-         
-         // to test socket timeout (2 seconds)
-         //receiveSocket.setSoTimeout(2000);
       } catch (SocketException se) {
          se.printStackTrace();
          System.exit(1);
       } 
    }
 
-   public void receiveAndEcho()
+   public void receiveAndProcess()
    {
-      // Construct a DatagramPacket for receiving packets up 
-      // to 100 bytes long (the length of the byte array).
       while(true) {
          byte data[] = new byte[20];
          receivePacket = new DatagramPacket(data, data.length);
@@ -93,7 +83,6 @@ public class Server {
          System.out.println("Content String: " + s);
          System.out.println("Content Bytes: " + byteToHex(data)+"\n");
 
-         // Slow things down (wait 5 seconds)
          try {
             Thread.sleep(500);
          } catch (InterruptedException e) {
@@ -139,7 +128,7 @@ public class Server {
    public static void main( String args[] )
    {
       Server c = new Server();
-      c.receiveAndEcho();
+      c.receiveAndProcess();
    }
 }
 

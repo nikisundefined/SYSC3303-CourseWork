@@ -34,9 +34,6 @@ public class Client {
    public Client()
    {
       try {
-         // Construct a datagram socket and bind it to any available 
-         // port on the local host machine. This socket will be used to
-         // send and receive UDP Datagram packets.
          sendReceiveSocket = new DatagramSocket();
       } catch (SocketException se) {   // Can't create the socket.
          se.printStackTrace();
