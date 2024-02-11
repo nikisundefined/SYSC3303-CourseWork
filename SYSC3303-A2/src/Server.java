@@ -8,9 +8,10 @@ import java.nio.charset.StandardCharsets;
 
 public class Server {
 
-   DatagramPacket sendPacket, receivePacket;
-   DatagramSocket sendSocket, receiveSocket;
+   DatagramPacket sendPacket, receivePacket; // packet definitions
+   DatagramSocket sendSocket, receiveSocket; // socket definitions
 
+   // this method is used to convert a byte array to a nice printable string of Hex values.
    public static String byteToHex(byte[] b){
       final StringBuilder builder = new StringBuilder();
       for(byte e : b){
@@ -37,8 +38,8 @@ public class Server {
    public Server()
    {
       try {
-         sendSocket = new DatagramSocket();
-         receiveSocket = new DatagramSocket(69);
+         sendSocket = new DatagramSocket(); // initialize the sendSocket
+         receiveSocket = new DatagramSocket(69); // initialize the receiveSocket to port 69
       } catch (SocketException se) {
          se.printStackTrace();
          System.exit(1);
@@ -70,10 +71,10 @@ public class Server {
          String pattern = "0[12].*?0.*?0"; // pattern template to make sure the packet is valid
 
          try{
-            if(!(s.matches(pattern))){
-               sendSocket.close();
-               receiveSocket.close();
-               throw new IllegalArgumentException("Invalid Packet Received");
+            if(!(s.matches(pattern))){ // if the contents of the packet received do not match the template previously defined
+               sendSocket.close(); // close the sendSocket
+               receiveSocket.close(); // close the receiveSocket
+               throw new IllegalArgumentException("Invalid Packet Received"); // throw the invalid packet received message
             }
          } catch(IllegalArgumentException e) {
             System.out.println("Error: " + e.getMessage());
@@ -93,17 +94,17 @@ public class Server {
             System.exit(1);
          }
 
-         byte[] returnMsg = {0, 0, 0, 0};
-         if(data[1]==(byte)1) {
-            returnMsg[1] = 3;
-            returnMsg[3] = 1;
+         byte[] returnMsg = {0, 0, 0, 0}; // initialize the empty return message
+         if(data[1]==(byte)1) { // check for the code that correlates to read
+            returnMsg[1] = 3;   // change the entries in the byte array to match the
+            returnMsg[3] = 1;   // requested codes in the assignment outline
          } else {
-            returnMsg[1] = 4;
+            returnMsg[1] = 4;   // otherwise return the code for write
          }
 
          try{
-            sendPacket = new DatagramPacket(returnMsg, returnMsg.length,
-                    InetAddress.getLocalHost(), 23);
+            sendPacket = new DatagramPacket(returnMsg, returnMsg.length, // create the new packet containing the return
+                    InetAddress.getLocalHost(), 23);                // message that we just created and designate it to port 23
          } catch(UnknownHostException e) {
             e.printStackTrace();
             System.exit(1);
@@ -118,7 +119,7 @@ public class Server {
          System.out.println("Content Bytes: " + byteToHex(returnMsg)+"\n");
 
          try {
-            sendSocket.send(sendPacket);
+            sendSocket.send(sendPacket); // attempt to send the new packet to the intermediate host
          } catch (IOException e) {
             e.printStackTrace();
             System.exit(1);

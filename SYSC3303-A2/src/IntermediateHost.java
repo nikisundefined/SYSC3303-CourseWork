@@ -26,6 +26,7 @@ public class IntermediateHost {
         return printable;
     }
 
+    // this method is used to convert a byte array to a nice printable string of Hex values.
     public static String byteToHex(byte[] b){
         final StringBuilder builder = new StringBuilder();
         for(byte e : b){
@@ -36,8 +37,8 @@ public class IntermediateHost {
 
     public IntermediateHost(){
         try {
-            sendSocket = new DatagramSocket();
-            receiveSocket = new DatagramSocket(23);
+            sendSocket = new DatagramSocket(); // open the sendSocket
+            receiveSocket = new DatagramSocket(23); // open the receiveSocket to port 23
         } catch (SocketException se) {
             se.printStackTrace();
             System.exit(1);
@@ -48,9 +49,8 @@ public class IntermediateHost {
         while(true){
             byte[] data = new byte[20];
 
-            int clientPort;
-            InetAddress clientAd;
-
+            int clientPort; // initialize a variable to contain the port of the
+                            // Client class so that it can send packets back to it
             receivePacket = new DatagramPacket(data, data.length);
 
             System.out.println("INTERMEDIATE HOST> Waiting for Packet.\n");
@@ -65,7 +65,7 @@ public class IntermediateHost {
                 System.exit(1);
             }
 
-            clientPort = receivePacket.getPort();
+            clientPort = receivePacket.getPort(); // register the port tied to the Client
 
             System.out.println("INTERMEDIATE HOST> Packet received");
 
@@ -84,7 +84,7 @@ public class IntermediateHost {
             }
 
             try{
-                sendPacket = new DatagramPacket(data, data.length,
+                sendPacket = new DatagramPacket(data, data.length, // attempt to send a packet to the server at port 69
                         InetAddress.getLocalHost(), 69);
             } catch(UnknownHostException e) {
                 e.printStackTrace();
@@ -107,8 +107,8 @@ public class IntermediateHost {
             System.out.println("INTERMEDIATE HOST> packet sent\n");
 
             byte serverData[] = new byte[4];
-            receivePacket = new DatagramPacket(serverData, serverData.length);
-            if(data[1] == (byte)3){
+            receivePacket = new DatagramPacket(serverData, serverData.length); // initialize the packet that will be received from the server
+            if(data[1] == (byte)3){ // if the packet is the invalid packet close the sockets and exit the program.
                 System.out.println("Intermediate Host sockets closed.");
                 receiveSocket.close();
                 sendSocket.close();
@@ -146,7 +146,7 @@ public class IntermediateHost {
             }
 
             try{
-                sendPacket = new DatagramPacket(serverData, receivePacket.getLength(),
+                sendPacket = new DatagramPacket(serverData, receivePacket.getLength(), // attempt to send the packet received from the server to the client
                         InetAddress.getLocalHost(), clientPort);
             } catch(UnknownHostException e) {
                 e.printStackTrace();
@@ -161,7 +161,7 @@ public class IntermediateHost {
             System.out.println("Content Bytes: "+ byteToHex(serverData)+"\n");
 
             try {
-                sendSocket.send(sendPacket);
+                sendSocket.send(sendPacket); // send off the packet to the client
             } catch (IOException e) {
                 e.printStackTrace();
                 System.exit(1);
