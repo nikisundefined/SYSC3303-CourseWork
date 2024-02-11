@@ -1,3 +1,7 @@
+// Written by Nicholas Nemec - 101211060
+// Inspiration taken from the example code
+// posted on the class brightspace
+
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
